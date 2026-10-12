@@ -702,6 +702,7 @@
       <div class="preset-group">
         <span class="preset-label">Preset:</span>
         <button class="preset-btn" id="preset-safe"       onclick="setPreset('safe')">Safe</button>
+        <button class="preset-btn" id="preset-wordpress"  onclick="setPreset('wordpress')">WordPress</button>
         <button class="preset-btn" id="preset-aggressive" onclick="setPreset('aggressive')">Aggressive</button>
         <div class="preset-divider"></div>
         <button class="preset-btn" id="preset-none" onclick="setPreset('none')">Clear All</button>
@@ -743,6 +744,7 @@
           <label class="option-item"><input type="checkbox" id="opt_redundant_nesting"><div class="option-label"><strong>Redundant nested tags</strong><span>Collapse doubled &lt;strong&gt;&lt;strong&gt;, &lt;em&gt;&lt;em&gt; etc.</span></div></label>
           <label class="option-item"><input type="checkbox" id="opt_normalize_bi"><div class="option-label"><strong>Normalize &lt;b&gt; / &lt;i&gt; tags</strong><span>Convert &lt;b&gt; to &lt;strong&gt; and &lt;i&gt; to &lt;em&gt;</span></div></label>
           <label class="option-item"><input type="checkbox" id="opt_empty_divs"><div class="option-label"><strong>Bare wrapper &lt;div&gt; tags</strong><span>Unwrap &lt;div&gt; tags with no attributes</span></div></label>
+          <label class="option-item"><input type="checkbox" id="opt_wp_wrappers"><div class="option-label"><strong>WordPress structural wrappers</strong><span>Unwrap &lt;main&gt;, &lt;article&gt;, &lt;header&gt; and &lt;footer&gt; while keeping their content</span></div></label>
         </div></div>
       </div>
 
@@ -857,7 +859,8 @@
   <div class="instr-section">
     <h2>Presets explained</h2>
     <ul>
-      <li><strong>Safe</strong> — The recommended starting point. Removes the most common junk (inline styles, class attributes, MS Office markup, empty tags, invisible characters) with essentially zero risk of affecting how your content looks or behaves.</li>
+      <li><strong>Safe</strong> — The recommended general-purpose starting point. Removes common junk, including HTML comments, without deliberately removing document-level structural wrappers.</li>
+      <li><strong>WordPress</strong> — Safe cleanup plus bare &lt;div&gt; wrappers and outer &lt;main&gt;, &lt;article&gt;, &lt;header&gt; and &lt;footer&gt; tags. Their inner content is preserved. Designed for HTML that will be pasted inside a WordPress post or page.</li>
       <li><strong>Aggressive</strong> — All rules enabled, including aria-* attributes. Best for heavily polluted HTML where you want the most complete cleanup. Review the output before using it.</li>
       <li><strong>Clear All</strong> — Unchecks everything so you can hand-pick exactly which rules to run.</li>
     </ul>
@@ -867,7 +870,7 @@
     <h2>Rule categories</h2>
     <ul>
       <li><strong>Attributes</strong> — Removes formatting and metadata attributes that editors inject but serve no purpose in the destination. Includes inline styles, class names, data-* tracking attributes, lang= on inline elements, and old HTML4 presentational attributes like align= and bgcolor=.</li>
-      <li><strong>Tags</strong> — Cleans up tag-level clutter: empty paragraphs, bare spans, legacy &lt;font&gt; and &lt;center&gt; elements (content is kept, just the wrapper tag is removed), duplicate &lt;br&gt; tags, and redundant nested formatting like &lt;strong&gt;&lt;strong&gt;.</li>
+      <li><strong>Tags</strong> — Cleans up tag-level clutter: empty paragraphs, bare spans, legacy &lt;font&gt; and &lt;center&gt; elements, duplicate &lt;br&gt; tags, redundant nested formatting, bare &lt;div&gt; wrappers, and optional WordPress structural wrappers (&lt;main&gt;, &lt;article&gt;, &lt;header&gt;, &lt;footer&gt;). Wrapper cleanup always keeps the content inside.</li>
       <li><strong>Encoding &amp; Invisible Characters</strong> — Targets characters you can't see but that cause problems: zero-width spaces, soft hyphens, non-breaking hyphens from Word's autocorrect, and curly/smart quotes.</li>
       <li><strong>MS Office &amp; CMS Artifacts</strong> — Specifically targets markup that comes from copying out of Word, Outlook, or certain CMS editors: &lt;o:p&gt; tags, mso-* style values, conditional comment blocks, and xmlns namespace declarations.</li>
       <li><strong>Whitespace</strong> — Collapses excessive blank lines and trims trailing spaces from each line.</li>
@@ -962,7 +965,7 @@
   // ── Category maps ──
   const catMap = {
     'cat-attributes': ['opt_inline_styles','opt_classes','opt_data_attrs','opt_ids','opt_lang_attrs','opt_presentational_attrs','opt_aria_attrs','opt_tabindex'],
-    'cat-tags':       ['opt_empty_p','opt_empty_spans','opt_font_tags','opt_center_tags','opt_double_br','opt_redundant_nesting','opt_normalize_bi','opt_empty_divs'],
+    'cat-tags':       ['opt_empty_p','opt_empty_spans','opt_font_tags','opt_center_tags','opt_double_br','opt_redundant_nesting','opt_normalize_bi','opt_empty_divs','opt_wp_wrappers'],
     'cat-encoding':   ['opt_zero_width','opt_soft_hyphens','opt_smart_quotes','opt_extra_nbsp'],
     'cat-office':     ['opt_ms_office','opt_html_comments','opt_tag_whitespace'],
     'cat-whitespace': ['opt_normalize_whitespace','opt_trailing_whitespace'],
@@ -976,13 +979,26 @@
     'opt_normalize_whitespace','opt_trailing_whitespace'
   ];
 
+  // Tailored for content that will be pasted inside a WordPress post/page.
+  // It removes editor/CMS noise plus outer document wrappers, but preserves
+  // semantic content such as headings, paragraphs, lists, blockquotes,
+  // links, images, figure/figcaption, section, pre/code and tables.
+  const wordpressOpts = [
+    'opt_inline_styles','opt_classes','opt_data_attrs','opt_lang_attrs',
+    'opt_presentational_attrs','opt_empty_p','opt_empty_spans','opt_font_tags',
+    'opt_center_tags','opt_double_br','opt_redundant_nesting','opt_zero_width',
+    'opt_soft_hyphens','opt_ms_office','opt_html_comments','opt_tag_whitespace',
+    'opt_normalize_whitespace','opt_trailing_whitespace','opt_empty_divs',
+    'opt_wp_wrappers'
+  ];
+
   const allOpts = Object.values(catMap).flat();
 
   function setPreset(preset) {
-    ['safe','aggressive','none'].forEach(p => {
+    ['safe','wordpress','aggressive','none'].forEach(p => {
       document.getElementById('preset-' + p)?.classList.remove('active');
     });
-    if (['safe','aggressive','none'].includes(preset)) {
+    if (['safe','wordpress','aggressive','none'].includes(preset)) {
       document.getElementById('preset-' + preset).classList.add('active');
     }
     allOpts.forEach(id => {
@@ -991,6 +1007,7 @@
       if (preset === 'aggressive') el.checked = true;
       else if (preset === 'none') el.checked = false;
       else if (preset === 'safe') el.checked = safeOpts.includes(id);
+      else if (preset === 'wordpress') el.checked = wordpressOpts.includes(id);
     });
     updateAllMeta();
   }
@@ -1152,6 +1169,15 @@
       }, 'Bare <div> wrappers unwrapped', 'cleaned');
     }
 
+    if (get('opt_wp_wrappers')) {
+      applyBlock(() => {
+        // WordPress already supplies the outer post/page container through the theme.
+        // Remove only the wrapper tags; never remove their inner content.
+        // Attributes are accepted because class/style cleanup may be disabled manually.
+        output = output.replace(/<\/?(?:main|article|header|footer)\b[^>]*>/gi, '');
+      }, 'WordPress structural wrappers unwrapped', 'cleaned');
+    }
+
     if (get('opt_redundant_nesting')) {
       applyBlock(() => {
         ['strong','em','b','i','u','s'].forEach(tag => {
@@ -1280,7 +1306,7 @@
   }
 
   // Init
-  setPreset('safe');
+  setPreset('wordpress');
 </script>
 </body>
 </html>
