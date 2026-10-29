@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Estación Editorial — Sueños Cósmicos del Sur</title>
+  
+  <!-- Tipografías: Playfair Display + Plus Jakarta Sans + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Marked & KaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            cormorant: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+          },
+          colors: {
+            cosmic: {
+              void: '#07080d',
+              abyss: '#0c0e17',
+              surface: '#131624',
+              border: 'rgba(255, 255, 255, 0.08)',
+              crimson: '#b91c1c',
+              rose: '#f43f5e',
+              indigo: '#6366f1',
+              violet: '#8b5cf6',
+              starlight: '#f1f5f9'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Sueños Cósmicos del Sur: Nebulosa de fondo suave y viva */
+    body {
+      background-color: #07080d;
+      color: #e2e8f0;
+      overflow-x: hidden;
+      min-height: 100vh;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    .cosmic-nebula {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: 
+        radial-gradient(circle at 18% 22%, rgba(139, 92, 246, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 82% 15%, rgba(185, 28, 28, 0.12) 0%, transparent 42%),
+        radial-gradient(circle at 50% 85%, rgba(99, 102, 241, 0.10) 0%, transparent 50%),
+        radial-gradient(circle at 75% 70%, rgba(244, 63, 94, 0.08) 0%, transparent 40%);
+      filter: blur(40px);
+      transition: opacity 0.5s ease;
+    }
+
+    html:not(.dark) body {
+      background-color: #f7f8fa;
+      color: #1e293b;
+    }
+    html:not(.dark) .cosmic-nebula {
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(224, 231, 255, 0.7) 0%, transparent 50%),
+        radial-gradient(circle at 80% 25%, rgba(254, 226, 226, 0.6) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(243, 232, 255, 0.6) 0%, transparent 50%);
+      filter: blur(30px);
+    }
+
+    /* Glassmorphism estelar */
+    .glass-surface {
+      background: rgba(19, 22, 36, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    html:not(.dark) .glass-surface {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+    }
+
+    .glass-card-hover {
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgba(244, 63, 94, 0.35);
+      box-shadow: 0 12px 35px -8px rgba(185, 28, 28, 0.2), 0 0 1px 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Transición SPA entre vistas */
+    .spa-view {
+      display: none;
+      opacity: 0;
+      transform: translateY(14px) scale(0.995);
+      transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .spa-view.view-active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Scrollbars invisibles y elegantes */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
+
+    /* Renderizado de Preview Editorial */
+    .prose-editorial h1, .prose-editorial h2, .prose-editorial h3 {
+      font-family: 'Playfair Display', Georgia, serif;
+      letter-spacing: -0.015em;
+      color: inherit;
+    }
+    .prose-editorial h1 { font-size: 1.85rem; margin-top: 1.2rem; margin-bottom: 0.6rem; font-weight: 700; }
+    .prose-editorial h2 { font-size: 1.45rem; margin-top: 1.4rem; margin-bottom: 0.5rem; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.3rem; }
+    .prose-editorial h3 { font-size: 1.2rem; margin-top: 1.1rem; margin-bottom: 0.4rem; font-weight: 600; }
+    .prose-editorial p { margin-bottom: 0.95rem; line-height: 1.8; font-size: 0.95rem; }
+    .prose-editorial code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.86em;
+      background: rgba(139, 92, 246, 0.12);
+      color: #c084fc;
+      padding: 0.15em 0.35em;
+      border-radius: 0.3rem;
+    }
+    html:not(.dark) .prose-editorial code {
+      background: rgba(139, 92, 246, 0.1);
+      color: #7e22ce;
+    }
+    .prose-editorial pre {
+      background: #090a10;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.6rem;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    .prose-editorial blockquote {
+      border-left: 3px solid #b91c1c;
+      padding-left: 1.1rem;
+      font-style: italic;
+      color: #94a3b8;
+      margin: 1rem 0;
+    }
+    .prose-editorial a {
+      color: #f43f5e;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-rose-500/30 selection:text-rose-300">
+
+  <!-- Fondo Cósmico -->
+  <div class="cosmic-nebula"></div>
+
+  <!-- Contenedor Principal App -->
+  <div class="relative z-10 min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / NAVEGACIÓN SPA -->
+    <header class="sticky top-0 z-50 border-b border-white/[0.06] dark:border-white/[0.06] bg-cosmic-void/70 dark:bg-cosmic-void/70 backdrop-blur-xl transition-colors">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        
+        <!-- Logo & Identidad Cósmica -->
+        <div onclick="navigateTo('view-hub')" class="flex items-center space-x-3 cursor-pointer group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-crimson to-violet-600 flex items-center justify-center text-white font-serif font-bold text-lg shadow-lg shadow-crimson/30 group-hover:rotate-3 transition-transform">
+            ✦
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-serif font-bold tracking-tight text-base sm:text-lg text-white group-hover:text-rose-400 transition-colors">La Estación Editorial</span>
+              <span class="text-[10px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-400">SUR</span>
+            </div>
+            <span class="text-[10px] font-mono tracking-wider text-neutral-400 hidden sm:block">Bitácora de texto puro · Astro & Edge</span>
+          </div>
+        </div>
+
+        <!-- Indicador de Navegación Activa en SPA -->
+        <div class="hidden md:flex items-center space-x-1 font-mono text-xs text-neutral-400 bg-white/[0.03] border border-white/[0.06] p-1 rounded-xl">
+          <button id="navBtnHub" onclick="navigateTo('view-hub')" class="px-3 py-1.5 rounded-lg hover:text-white transition-colors text-white bg-white/10">Portal</button>
+          <button id="navBtnCleaner" onclick="navigateTo('view-cleaner')" class="px-3 py-1.5 rounded-lg hover:text-white transition-colors">Clean HTML</button>
+          <button id="navBtnAtelier" onclick="navigateTo('view-atelier')" class="px-3 py-1.5 rounded-lg hover:text-white transition-colors">Atelier MDX</button>
+        </div>
+
+        <!-- Acciones: Indicador Edge y Switch Tema -->
+        <div class="flex items-center space-x-3">
+          <div class="hidden sm:flex items-center space-x-2 text-[11px] font-mono text-neutral-400 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08]">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Edge Ready</span>
+          </div>
+
+          <button id="themeToggleBtn" aria-label="Cambiar modo cósmico" class="p-2 rounded-xl text-neutral-400 hover:text-white bg-white/[0.04] border border-white/[0.08] hover:bg-white/10 transition-colors">
+            <svg id="themeSun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            <svg id="themeMoon" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- CUERPO DE LA SPA (3 VISTAS DINÁMICAS) -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+      <!-- ========================================== -->
+      <!-- VISTA 1: HUB / PORTAL (SUEÑOS CÓSMICOS)   -->
+      <!-- ========================================== -->
+      <section id="view-hub" class="spa-view view-active space-y-12">
+        
+        <!-- Hero Reflexivo & Poético -->
+        <div class="text-center max-w-3xl mx-auto pt-6 pb-2">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-mono mb-6">
+            <span>✦</span>
+            <span>Constelación de Publicación Independiente</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-[1.15] mb-6">
+            Sueños cósmicos del sur, <br class="hidden sm:inline">
+            <span class="italic font-normal bg-gradient-to-r from-rose-400 via-violet-300 to-indigo-300 bg-clip-text text-transparent">
+              fidelidad en texto puro.
+            </span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-neutral-400 leading-relaxed font-light font-cormorant sm:text-xl">
+            Un refugio editorial para depurar fragmentos, proteger el archivo a lo largo de las décadas y componer ensayos matemáticos listos para viajar a Cloudflare Pages mediante un simple commit.
+          </p>
+        </div>
+
+        <!-- DOS TARJETAS ESTELARES (ACCESO A LAS HERRAMIENTAS) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          
+          <!-- TARJETA 1: CLEAN HTML -->
+          <div onclick="navigateTo('view-cleaner')" class="glass-surface glass-card-hover rounded-3xl p-8 cursor-pointer group flex flex-col justify-between border-t-2 border-t-amber-500/50">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-mono font-bold text-xl border border-amber-500/20 group-hover:scale-110 transition-transform">
+                  &lt;/&gt;
+                </div>
+                <span class="text-xs font-mono uppercase tracking-widest text-amber-400/90 font-medium px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                  Filtro Sanitario
+                </span>
+              </div>
+
+              <h2 class="text-2xl font-serif font-bold text-white group-hover:text-amber-300 transition-colors mb-3">
+                Saneador HTML
+              </h2>
+              <p class="text-neutral-400 text-sm leading-relaxed mb-6">
+                Purifica el barro digital proveniente de WordPress, Google Docs o editores visuales. Despoja atributos <code class="text-xs text-amber-300">style=""</code>, clases ajenas y anidamientos rotos preservando la pureza estructural del ensayo.
+              </p>
+            </div>
+
+            <div class="pt-6 border-t border-white/[0.08] flex items-center justify-between text-sm">
+              <span class="font-mono text-xs text-neutral-400">01 / DEPURACIÓN</span>
+              <span class="inline-flex items-center space-x-1.5 font-medium text-amber-400 group-hover:translate-x-1 transition-transform">
+                <span>Abrir Saneador</span>
+                <span>→</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- TARJETA 2: ATELIER MARKDOWN & KATEX -->
+          <div onclick="navigateTo('view-atelier')" class="glass-surface glass-card-hover rounded-3xl p-8 cursor-pointer group flex flex-col justify-between border-t-2 border-t-rose-500/50">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center font-mono font-bold text-xl border border-rose-500/20 group-hover:scale-110 transition-transform">
+                  M↓
+                </div>
+                <span class="text-xs font-mono uppercase tracking-widest text-rose-400/90 font-medium px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20">
+                  Composición MDX
+                </span>
+              </div>
+
+              <h2 class="text-2xl font-serif font-bold text-white group-hover:text-rose-300 transition-colors mb-3">
+                Atelier Markdown & KaTeX
+              </h2>
+              <p class="text-neutral-400 text-sm leading-relaxed mb-6">
+                Redactá ensayos con fórmulas matemáticas en bloque y en línea (<code class="text-xs text-rose-300">$...$</code>), generador interactivo de frontmatter YAML y descarga directa de archivos <code class="text-xs text-rose-300">.mdx</code> para Git.
+              </p>
+            </div>
+
+            <div class="pt-6 border-t border-white/[0.08] flex items-center justify-between text-sm">
+              <span class="font-mono text-xs text-neutral-400">02 / ESCRITURA</span>
+              <span class="inline-flex items-center space-x-1.5 font-medium text-rose-400 group-hover:translate-x-1 transition-transform">
+                <span>Abrir Atelier</span>
+                <span>→</span>
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Banner Discreto de Soberanía -->
+        <div class="max-w-3xl mx-auto p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06] text-center text-xs font-mono text-neutral-400">
+          <span>⚡ Sin rastreadores · Arquitectura sin servidor · Exportación atómica directa</span>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VISTA 2: SANEADOR HTML (CLEAN HTML TOOL)   -->
+      <!-- ========================================== -->
+      <section id="view-cleaner" class="spa-view space-y-6">
+        
+        <!-- Barra de Navegación Retorno & Título -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('view-hub')" class="p-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white transition-colors flex items-center space-x-1.5 text-xs font-mono">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              <span>Volver al Portal</span>
+            </button>
+            <div class="h-4 w-px bg-white/10"></div>
+            <h2 class="text-xl font-serif font-bold text-white">Saneador de Código HTML</h2>
+          </div>
+
+          <!-- Presets -->
+          <div class="flex items-center space-x-2 text-xs font-mono">
+            <span class="text-neutral-500 hidden md:inline">Presets:</span>
+            <button onclick="applyCleanerPreset('wordpress')" class="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-colors">
+              WordPress
+            </button>
+            <button onclick="applyCleanerPreset('docs')" class="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-colors">
+              Docs / Word
+            </button>
+            <button onclick="applyCleanerPreset('pure')" class="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/10 text-neutral-300 hover:text-white border border-white/10 transition-colors">
+              Puro Texto
+            </button>
+          </div>
+        </div>
+
+        <!-- Reglas de Limpieza -->
+        <div class="glass-surface rounded-2xl p-4 text-xs font-mono text-neutral-300 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="chkStyles" checked class="rounded bg-white/10 border-white/20 text-rose-500 focus:ring-0">
+            <span>Quitar style=""</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="chkClasses" checked class="rounded bg-white/10 border-white/20 text-rose-500 focus:ring-0">
+            <span>Quitar class=""</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="chkDivs" checked class="rounded bg-white/10 border-white/20 text-rose-500 focus:ring-0">
+            <span>Desanidar &lt;div&gt;</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="chkEmptyTags" checked class="rounded bg-white/10 border-white/20 text-rose-500 focus:ring-0">
+            <span>Remover tags vacíos</span>
+          </label>
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input type="checkbox" id="chkZeroWidth" checked class="rounded bg-white/10 border-white/20 text-rose-500 focus:ring-0">
+            <span>Limpiar espacios zero-width</span>
+          </label>
+        </div>
+
+        <!-- Paneles de Entrada y Salida -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Entrada -->
+          <div class="flex flex-col space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+              <span>HTML Original de Entrada</span>
+              <button onclick="loadSampleDirtyHtml()" class="hover:text-amber-400 transition-colors">Pegar Muestra WordPress</button>
+            </div>
+            <textarea id="dirtyInput" class="w-full h-80 p-4 rounded-2xl bg-black/40 border border-white/10 text-xs font-mono text-neutral-200 focus:outline-none focus:border-amber-400 transition-colors resize-none leading-relaxed" placeholder="Pegá acá el código HTML importado..."></textarea>
+          </div>
+
+          <!-- Salida -->
+          <div class="flex flex-col space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+              <span>HTML Saneado</span>
+              <span id="reductionBadge" class="text-emerald-400">0% reducción</span>
+            </div>
+            <textarea id="cleanOutput" readonly class="w-full h-80 p-4 rounded-2xl bg-black/60 border border-white/10 text-xs font-mono text-emerald-300 focus:outline-none resize-none leading-relaxed" placeholder="El HTML puro aparecerá acá tras pulsar Limpiar..."></textarea>
+          </div>
+
+        </div>
+
+        <!-- Barra de Acciones del Saneador -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <button onclick="executeHtmlSanitizer()" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-medium text-xs sm:text-sm font-mono shadow-lg shadow-amber-600/20 transition-all flex items-center space-x-2">
+            <span>✦</span>
+            <span>Limpiar Ahora</span>
+          </button>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="copyCleanHtml(this)" class="px-4 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/10 text-neutral-200 text-xs font-mono border border-white/10 transition-colors">
+              Copiar HTML Limpio
+            </button>
+            <button onclick="transferToMarkdownEditor()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-mono shadow-lg shadow-rose-600/20 transition-all flex items-center space-x-1.5">
+              <span>Transferir al Atelier Markdown</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ========================================== -->
+      <!-- VISTA 3: ATELIER MARKDOWN & KATEX (SPA TOOL 2) -->
+      <!-- ========================================== -->
+      <section id="view-atelier" class="spa-view space-y-6">
+        
+        <!-- Retorno y Acciones Principales -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
+          <div class="flex items-center space-x-3">
+            <button onclick="navigateTo('view-hub')" class="p-2 rounded-xl bg-white/[0.04] hover:bg-white/10 text-neutral-400 hover:text-white transition-colors flex items-center space-x-1.5 text-xs font-mono">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              <span>Volver al Portal</span>
+            </button>
+            <div class="h-4 w-px bg-white/10"></div>
+            <h2 class="text-xl font-serif font-bold text-white">Atelier Markdown & KaTeX</h2>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="copyFullMdx(this)" class="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/10 text-neutral-200 text-xs font-mono border border-white/10 transition-colors">
+              Copiar .mdx
+            </button>
+            <button onclick="downloadMdx()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-crimson to-rose-600 hover:opacity-90 text-white font-mono text-xs font-medium shadow-lg shadow-crimson/30 transition-all flex items-center space-x-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Descargar slug.mdx</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Acordeón / Barra de Frontmatter YAML -->
+        <div class="glass-surface rounded-2xl p-5 border border-white/[0.08]">
+          <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="toggleFrontmatterPanel()">
+            <div class="flex items-center space-x-2 text-xs font-mono text-rose-400">
+              <span>✦</span>
+              <span class="uppercase tracking-wider font-semibold">Frontmatter YAML (Colección Astro)</span>
+            </div>
+            <span id="frontmatterChevron" class="text-xs text-neutral-400 font-mono">▼ Ocultar</span>
+          </div>
+
+          <div id="frontmatterFields" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-2 text-xs font-mono">
+            <div>
+              <label class="block text-neutral-400 mb-1 text-[10px] uppercase">Título</label>
+              <input type="text" id="fmTitle" oninput="handleTitleInput()" value="Un día en el campo de algo que no se donde va" class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-neutral-200 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="block text-neutral-400 mb-1 text-[10px] uppercase">Slug URL</label>
+              <input type="text" id="fmSlug" value="un-dia-en-el-campo-de-algo-que-no-se-donde-va" class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-neutral-200 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="block text-neutral-400 mb-1 text-[10px] uppercase">Fecha</label>
+              <input type="date" id="fmDate" value="2026-10-28" class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-neutral-200 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="block text-neutral-400 mb-1 text-[10px] uppercase">Categorías</label>
+              <input type="text" id="fmCategories" value="Tecnología, Sistemas" class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-neutral-200 focus:outline-none focus:border-rose-500">
+            </div>
+            <div>
+              <label class="block text-neutral-400 mb-1 text-[10px] uppercase">Idioma</label>
+              <select id="fmLang" class="w-full px-3 py-1.5 rounded-lg bg-black/40 border border-white/10 text-neutral-200 focus:outline-none focus:border-rose-500">
+                <option value="es">Español (es)</option>
+                <option value="en">English (en)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barra de Formato Rápido Markdown & KaTeX -->
+        <div class="flex items-center space-x-1.5 overflow-x-auto py-2 text-xs font-mono text-neutral-400">
+          <button onclick="insertMdSnippet('## ')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">H2</button>
+          <button onclick="insertMdSnippet('### ')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">H3</button>
+          <button onclick="wrapMdSnippet('**', '**')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white font-bold">B</button>
+          <button onclick="wrapMdSnippet('*', '*')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white italic">I</button>
+          <button onclick="wrapMdSnippet('$', '$')" class="px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20">$ KaTeX</button>
+          <button onclick="insertBlockEquation()" class="px-2.5 py-1 rounded bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20">$$ Bloque</button>
+          <button onclick="insertMdSnippet('> ')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">Cita</button>
+          <button onclick="insertMdSnippet('- ')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">Lista</button>
+          <button onclick="insertMdSnippet('![]()')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">Img</button>
+          <button onclick="insertMdSnippet('[]()')" class="px-2.5 py-1 rounded bg-white/[0.04] hover:bg-white/10 text-white">Link</button>
+        </div>
+
+        <!-- Editor en tiempo real: Split View -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          <!-- Lado Izquierdo: Redacción -->
+          <div class="flex flex-col space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+              <span>Cuerpo del Artículo (.md / .mdx)</span>
+              <span id="editorStats">0 palabras · 0 KB</span>
+            </div>
+            <textarea id="atelierEditor" oninput="triggerMarkdownPreview()" class="w-full h-[520px] p-5 rounded-2xl bg-black/40 border border-white/10 text-xs sm:text-sm font-mono text-neutral-200 focus:outline-none focus:border-rose-500 transition-colors resize-none leading-relaxed"></textarea>
+          </div>
+
+          <!-- Lado Derecho: Previsualización Tipográfica en Vivo -->
+          <div class="flex flex-col space-y-2">
+            <div class="flex items-center justify-between text-xs font-mono text-neutral-400">
+              <span>Previsualización en Vivo</span>
+              <span class="text-rose-400 font-mono text-[11px]">Playfair & KaTeX Activo</span>
+            </div>
+            <div id="atelierPreview" class="w-full h-[520px] p-6 rounded-2xl glass-surface overflow-y-auto prose-editorial text-neutral-200">
+              <!-- Renderizado automático -->
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- FOOTER MÍNIMO DE LA SPA -->
+    <footer class="border-t border-white/[0.06] py-6 text-center text-xs font-mono text-neutral-400">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <span>La Estación Editorial · Soberanía digital sin dependencias</span>
+        <span class="text-neutral-400 text-[11px]">Compatible con repositorios Git, Astro & Cloudflare Edge</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- LÓGICA DE CONTROL DE LA SINGLE PAGE APPLICATION -->
+  <script>
+    // -----------------------------------------------------------------
+    // 1. ENRUTADOR SPA FLUIDO (GESTIÓN DE VISTAS Y TRANSICIONES)
+    // -----------------------------------------------------------------
+    const views = ['view-hub', 'view-cleaner', 'view-atelier'];
+    const navButtons = {
+      'view-hub': document.getElementById('navBtnHub'),
+      'view-cleaner': document.getElementById('navBtnCleaner'),
+      'view-atelier': document.getElementById('navBtnAtelier')
+    };
+
+    function navigateTo(targetViewId) {
+      views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.remove('view-active');
+        }
+      });
+
+      // Actualizar botones de navegación
+      Object.keys(navButtons).forEach(id => {
+        const btn = navButtons[id];
+        if (btn) {
+          if (id === targetViewId) {
+            btn.classList.add('bg-white/10', 'text-white');
+            btn.classList.remove('text-neutral-400');
+          } else {
+            btn.classList.remove('bg-white/10', 'text-white');
+            btn.classList.add('text-neutral-400');
+          }
+        }
+      });
+
+      // Desplegar la vista de destino con animación
+      const targetEl = document.getElementById(targetViewId);
+      if (targetEl) {
+        setTimeout(() => {
+          targetEl.classList.add('view-active');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
+      }
+
+      // Si entramos al atelier, renderizar previsualización fresca
+      if (targetViewId === 'view-atelier') {
+        setTimeout(triggerMarkdownPreview, 80);
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // 2. TEMA OSCURO / CLARO CÓSMICO
+    // -----------------------------------------------------------------
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeSun = document.getElementById('themeSun');
+    const themeMoon = document.getElementById('themeMoon');
+
+    function syncTheme(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        themeSun.classList.remove('hidden');
+        themeMoon.classList.add('hidden');
+        localStorage.setItem('estacion_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeSun.classList.add('hidden');
+        themeMoon.classList.remove('hidden');
+        localStorage.setItem('estacion_theme', 'light');
+      }
+    }
+
+    const currentTheme = localStorage.getItem('estacion_theme') || 'dark';
+    syncTheme(currentTheme === 'dark');
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      syncTheme(!isDark);
+    });
+
+    // -----------------------------------------------------------------
+    // 3. HERRAMIENTA 1: SANEADOR DE HTML
+    // -----------------------------------------------------------------
+    function executeHtmlSanitizer() {
+      const raw = document.getElementById('dirtyInput').value;
+      if (!raw.trim()) {
+        document.getElementById('cleanOutput').value = '';
+        document.getElementById('reductionBadge').innerText = '0% reducción';
+        return;
+      }
+
+      const stripStyles = document.getElementById('chkStyles').checked;
+      const stripClasses = document.getElementById('chkClasses').checked;
+      const unwrapDivs = document.getElementById('chkDivs').checked;
+      const removeEmpty = document.getElementById('chkEmptyTags').checked;
+      const cleanZeroWidth = document.getElementById('chkZeroWidth').checked;
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(raw, 'text/html');
+      const body = doc.body;
+
+      // Limpieza recursiva del árbol DOM
+      const sanitizeNode = (node) => {
+        if (node.nodeType === Node.COMMENT_NODE) {
+          node.remove();
+          return;
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = node.tagName.toLowerCase();
+
+          // Remover scripts, iframes sospechosos, estilos incrustados
+          if (['script', 'style', 'meta', 'link', 'noscript'].includes(tag)) {
+            node.remove();
+            return;
+          }
+
+          if (stripStyles) node.removeAttribute('style');
+          if (stripClasses) node.removeAttribute('class');
+
+          // Quitar atributos de tracking o data-*
+          Array.from(node.attributes).forEach(attr => {
+            if (attr.name.startsWith('data-') || attr.name.startsWith('aria-') || attr.name.startsWith('on')) {
+              node.removeAttribute(attr.name);
+            }
+          });
+
+          // Procesar descendientes
+          Array.from(node.childNodes).forEach(sanitizeNode);
+
+          // Remover tags vacíos si no son imágenes o saltos
+          if (removeEmpty && !['img', 'br', 'hr', 'input'].includes(tag)) {
+            if (!node.textContent.trim() && node.children.length === 0) {
+              node.remove();
+            }
+          }
+        }
+      };
+
+      Array.from(body.childNodes).forEach(sanitizeNode);
+
+      let cleanHtml = body.innerHTML;
+
+      // Desanidar <div>
+      if (unwrapDivs) {
+        cleanHtml = cleanHtml.replace(/<div[^>]*>/gi, '').replace(/<\/div>/gi, '\n');
+      }
+
+      // Remover espacios de ancho cero (zero-width characters de Word/Docs)
+      if (cleanZeroWidth) {
+        cleanHtml = cleanHtml.replace(/[\u200B-\u200D\uFEFF]/g, '');
+      }
+
+      // Normalizar saltos de línea
+      cleanHtml = cleanHtml.replace(/\n\s*\n\s*\n/g, '\n\n').trim();
+
+      document.getElementById('cleanOutput').value = cleanHtml;
+
+      // Calcular reducción
+      const origLen = raw.length;
+      const cleanLen = cleanHtml.length;
+      const percent = origLen > 0 ? Math.round(((origLen - cleanLen) / origLen) * 100) : 0;
+      document.getElementById('reductionBadge').innerText = `${percent}% reducción (${origLen - cleanLen} caracteres descartados)`;
+    }
+
+    function applyCleanerPreset(type) {
+      if (type === 'wordpress') {
+        document.getElementById('chkStyles').checked = true;
+        document.getElementById('chkClasses').checked = true;
+        document.getElementById('chkDivs').checked = true;
+        document.getElementById('chkEmptyTags').checked = true;
+        document.getElementById('chkZeroWidth').checked = true;
+      } else if (type === 'docs') {
+        document.getElementById('chkStyles').checked = true;
+        document.getElementById('chkClasses').checked = true;
+        document.getElementById('chkDivs').checked = true;
+        document.getElementById('chkEmptyTags').checked = true;
+        document.getElementById('chkZeroWidth').checked = true;
+      } else if (type === 'pure') {
+        document.getElementById('chkStyles').checked = true;
+        document.getElementById('chkClasses').checked = true;
+        document.getElementById('chkDivs').checked = true;
+        document.getElementById('chkEmptyTags').checked = false;
+        document.getElementById('chkZeroWidth').checked = true;
+      }
+      executeHtmlSanitizer();
+    }
+
+    function loadSampleDirtyHtml() {
+      const sample = `<div class="wp-block-group alignfull has-global-padding" style="margin-top:0;padding-bottom:var(--wp--preset--spacing--50)">
+  <h2 class="wp-block-heading has-text-align-center" style="font-family:Georgia,serif;font-size:2rem">Notas sobre la Singularidad y la Materia</h2>
+  <p style="line-height:1.8;color:#333333">En este apartado revisamos la consistencia de las hipótesis formuladas en el taller.</p>
+  <div class="wp-block-buttons">
+    <div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://dagorret.com.ar" style="border-radius:4px">Leer ensayo completo</a></div>
+  </div>
+  <p></p>
+</div>`;
+      document.getElementById('dirtyInput').value = sample;
+      executeHtmlSanitizer();
+    }
+
+    function copyCleanHtml(btn) {
+      const content = document.getElementById('cleanOutput').value;
+      if (!content) return;
+      copyStringToClipboard(content);
+      const prev = btn.innerText;
+      btn.innerText = "¡Copiado!";
+      setTimeout(() => { btn.innerText = prev; }, 1800);
+    }
+
+    function transferToMarkdownEditor() {
+      const clean = document.getElementById('cleanOutput').value;
+      if (clean) {
+        // Concatenar o transferir al editor Markdown
+        const current = document.getElementById('atelierEditor').value;
+        document.getElementById('atelierEditor').value = current ? `${current}\n\n${clean}` : clean;
+      }
+      navigateTo('view-atelier');
+    }
+
+    // -----------------------------------------------------------------
+    // 4. HERRAMIENTA 2: ATELIER MARKDOWN & KATEX
+    // -----------------------------------------------------------------
+    const defaultTemplateText = `Escribe tu Markdown o contenido aquí...
+
+### Fórmulas en línea
+La energía en reposo responde a $E = mc^2$.
+
+### Fórmulas en bloque
+$$
+x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}
+$$
+
+### Recursos y Enlaces
+Podés insertar imágenes o enlaces limpios:
+- [Archivo de Publicaciones](/archivo/)
+- Diagramas o notas complementarias.`;
+
+    function buildFrontmatter() {
+      const title = document.getElementById('fmTitle').value.trim() || 'Sin Título';
+      const slug = document.getElementById('fmSlug').value.trim() || 'ensayo-sin-slug';
+      const date = document.getElementById('fmDate').value || '2026-10-28';
+      const lang = document.getElementById('fmLang').value || 'es';
+      const cats = document.getElementById('fmCategories').value
+        .split(',')
+        .map(c => c.trim())
+        .filter(c => c.length > 0);
+
+      let yaml = `---\n`;
+      yaml += `title: "${title}"\n`;
+      yaml += `slug: ${slug}\n`;
+      yaml += `date: '${date}'\n`;
+      yaml += `lang: ${lang}\n`;
+      if (cats.length > 0) {
+        yaml += `categories:\n`;
+        cats.forEach(c => { yaml += `  - ${c}\n`; });
+      }
+      yaml += `---\n\n`;
+      return yaml;
+    }
+
+    function triggerMarkdownPreview() {
+      const editorText = document.getElementById('atelierEditor').value;
+      
+      // Métricas en vivo
+      const words = editorText.trim() ? editorText.trim().split(/\s+/).length : 0;
+      const kbytes = (new Blob([editorText]).size / 1024).toFixed(1);
+      document.getElementById('editorStats').innerText = `${words} palabras · ${kbytes} KB`;
+
+      // Render Markdown
+      const previewBox = document.getElementById('atelierPreview');
+      previewBox.innerHTML = marked.parse(editorText);
+
+      // Render KaTeX
+      if (window.renderMathInElement) {
+        try {
+          renderMathInElement(previewBox, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        } catch (err) {
+          console.warn("KaTeX parse warning:", err);
+        }
+      }
+    }
+
+    function handleTitleInput() {
+      const title = document.getElementById('fmTitle').value;
+      const slugInput = document.getElementById('fmSlug');
+      
+      // Auto-generar slug amigable
+      const cleanSlug = title
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+      
+      if (cleanSlug) {
+        slugInput.value = cleanSlug;
+      }
+    }
+
+    function toggleFrontmatterPanel() {
+      const fields = document.getElementById('frontmatterFields');
+      const chevron = document.getElementById('frontmatterChevron');
+      if (fields.classList.contains('hidden')) {
+        fields.classList.remove('hidden');
+        chevron.innerText = '▼ Ocultar';
+      } else {
+        fields.classList.add('hidden');
+        chevron.innerText = '▲ Mostrar';
+      }
+    }
+
+    function insertMdSnippet(snippet) {
+      const textarea = document.getElementById('atelierEditor');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      textarea.value = val.substring(0, start) + snippet + val.substring(end);
+      textarea.focus();
+      textarea.selectionEnd = start + snippet.length;
+      triggerMarkdownPreview();
+    }
+
+    function wrapMdSnippet(left, right) {
+      const textarea = document.getElementById('atelierEditor');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const val = textarea.value;
+      const sel = val.substring(start, end) || 'texto';
+      textarea.value = val.substring(0, start) + left + sel + right + val.substring(end);
+      textarea.focus();
+      textarea.selectionEnd = start + left.length + sel.length + right.length;
+      triggerMarkdownPreview();
+    }
+
+    function insertBlockEquation() {
+      insertMdSnippet('\n$$\nx = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}\n$$\n');
+    }
+
+    function getCompleteDocument() {
+      return buildFrontmatter() + document.getElementById('atelierEditor').value;
+    }
+
+    function copyFullMdx(btn) {
+      copyStringToClipboard(getCompleteDocument());
+      const prev = btn.innerText;
+      btn.innerText = "✓ ¡Copiado!";
+      setTimeout(() => { btn.innerText = prev; }, 1800);
+    }
+
+    function downloadMdx() {
+      const slug = document.getElementById('fmSlug').value.trim() || 'ensayo';
+      const content = getCompleteDocument();
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${slug}.mdx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyStringToClipboard(str) {
+      const temp = document.createElement('textarea');
+      temp.value = str;
+      temp.style.position = 'absolute';
+      temp.style.left = '-9999px';
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
+    }
+
+    // Inicialización al cargar la ventana
+    window.onload = function() {
+      document.getElementById('atelierEditor').value = defaultTemplateText;
+      triggerMarkdownPreview();
+    };
+  </script>
+</body>
+</html>
