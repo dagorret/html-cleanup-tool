@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucy Y3</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #050508;
+            --blue-glow: #00f0ff;
+            --blue-deep: #0044ff;
+            --red-glow: #ff0055;
+            --red-deep: #880022;
+            --text-main: #f0f4f8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-black);
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-main);
+        }
+
+        /* Canvas de fondo para partículas y líquido abstracto */
+        #canvas-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Luces de fondo abstractas */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 2;
+            animation: float 18s infinite alternate ease-in-out;
+        }
+
+        .orb-blue {
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, var(--blue-deep), transparent 70%);
+            top: -10%;
+            left: -10%;
+        }
+
+        .orb-red {
+            width: 45vw;
+            height: 45vw;
+            background: radial-gradient(circle, var(--red-glow), transparent 70%);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -9s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 50px) scale(1.15); }
+        }
+
+        /* Contenedor Principal */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Navbar opcional o minimalista */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .brand-logo {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, var(--blue-glow), var(--red-glow));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* Sección Central Hero */
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            max-width: 900px;
+        }
+
+        .title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(3rem, 8vw, 7rem);
+            line-height: 0.9;
+            text-transform: uppercase;
+            font-weight: 700;
+            position: relative;
+            user-select: none;
+            margin-bottom: 1rem;
+        }
+
+        .title span {
+            display: inline-block;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .title span:hover {
+            transform: translateY(-10px) scale(1.1);
+            color: var(--blue-glow);
+            text-shadow: 0 0 20px var(--blue-glow);
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: #a0a5b5;
+            letter-spacing: 2px;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            font-weight: 300;
+        }
+
+        /* Portal Interactivo a /admin */
+        .admin-portal-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .admin-portal {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .admin-portal::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--blue-glow), var(--red-glow), transparent 60%, var(--blue-glow));
+            animation: rotate 4s linear infinite;
+            z-index: -1;
+            opacity: 0.7;
+            transition: opacity 0.5s ease;
+        }
+
+        .admin-portal::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            border-radius: 50%;
+            background: var(--bg-black);
+            z-index: -1;
+        }
+
+        .portal-text {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            font-weight: 700;
+            text-transform: uppercase;
+            opacity: 0.7;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .admin-portal:hover {
+            width: 200px;
+            border-radius: 40px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.4), 0 0 40px rgba(255, 0, 85, 0.4);
+        }
+
+        .admin-portal:hover::before {
+            opacity: 1;
+            animation-duration: 1.5s;
+        }
+
+        .admin-portal:hover .portal-text {
+            opacity: 1;
+            transform: scale(1.1);
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes rotate {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        footer {
+            width: 100%;
+            text-align: center;
+            padding: 1.5rem 0;
+            font-size: 0.85rem;
+            color: rgba(240, 244, 248, 0.5);
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        footer strong {
+            color: var(--text-main);
+            font-weight: 400;
+        }
+
+        /* Decoración de grid cibernético sutil */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 3;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+    
+    <div class="orb orb-blue"></div>
+    <div class="orb orb-red"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <header>
+            <div class="brand-logo">LUCY Y3</div>
+            <div style="font-size: 0.8rem; opacity: 0.5; letter-spacing: 1px;">SYSTEM READY</div>
+        </header>
+
+        <main>
+            <h1 class="title" id="interactive-title">
+                <span>L</span><span>U</span><span>C</span><span>Y</span>
+                &nbsp;
+                <span style="color: var(--red-glow)">Y</span><span style="color: var(--blue-glow)">3</span>
+            </h1>
+            <p class="subtitle">Ecosistema interactivo & plataforma inteligente de gestión.</p>
+
+            <!-- Botón Sorpresivo / Portal Interactivo a /admin -->
+            <div class="admin-portal-wrapper">
+                <a href="/admin" class="admin-portal" title="Acceso al Panel">
+                    <span class="portal-text">ADMIN</span>
+                </a>
+            </div>
+        </main>
+
+        <footer>
+            Lucy Y3 - by <strong>Carlos Dagorret</strong> - Facultad de Cs. Económicas - <strong>UNRC</strong>
+        </footer>
+    </div>
+
+    <script>
+        // Animación dinámica de fondo con Canvas
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2 + 0.5;
+                this.color = Math.random() > 0.5 ? '#00f0ff' : '#ff0055';
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.alpha;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 70; i++) {
+            particles.push(new Particle());
+        }
+
+        // Efecto interactivo con el cursor
+        let mouse = { x: null, y: null };
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach((p, index) => {
+                p.update();
+                p.draw();
+
+                // Conectar líneas entre partículas cercanas
+                for (let j = index + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = p.color;
+                        ctx.globalAlpha = (1 - dist / 120) * 0.15;
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>
